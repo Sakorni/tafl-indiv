@@ -10,15 +10,15 @@ import (
 const mock = `S->Aa|Bb|c
 A->Bb|C|E
 B->D|C|E
+F->aA|@D|E
 `
 
-func main(){
+func main() {
 	r := strings.NewReader(mock)
 	grammar, err := NewGrammar(r)
-	if err !=nil{
+	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(grammar.String())
-	grammar.DeleteBarren()
-	fmt.Println(grammar.String())
+	fmt.Printf("Изначальная грамматика:\n%s\n", grammar)
+
 }

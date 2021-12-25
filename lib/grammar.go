@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"sync"
 	"unicode"
 )
 
@@ -34,7 +35,7 @@ func NewGrammar(r io.Reader) (Grammar, error){
 	return res, nil
 }
 
-func (g *Grammar) String() string {
+func (g Grammar) String() string {
 	buf := strings.Builder{}
 
 	for _, k := range g.keys{
@@ -45,6 +46,7 @@ func (g *Grammar) String() string {
 
 func (g *Grammar) DeleteBarren() {
 	barrenTerminals := make(map[rune]struct{})
+
 	oldLen := len(barrenTerminals)
 	for true{
 		for _, k := range g.keys{
@@ -62,8 +64,7 @@ func (g *Grammar) DeleteBarren() {
 	for i < len(g.keys){
 		key := g.keys[i]
 		if _, isBarren := barrenTerminals[key]; isBarren{
-			g.keys = append(g.keys[:i], g.keys[i+1:]...)
-			delete(g.productions, key)
+			g.DeleteProductionAt(i)
 		}else{
 			i++
 			for barren := range barrenTerminals{
@@ -73,4 +74,50 @@ func (g *Grammar) DeleteBarren() {
 	}
 }
 
+func (g *Grammar) DeleteProductionAt(index int) {
+	key := g.keys[index]
+	g.keys = append(g.keys[:index], g.keys[index+1:]...)
+	delete(g.productions, key)
+}
 
+
+func (g *Grammar) DeleteUnreachable(){
+	mu := sync.Mutex{}
+	wg := sync.WaitGroup{}
+	reachable := map[rune]struct{}{}
+	visited := map[rune]struct{}{}
+	var visit func(rune)
+	visit = func(node rune) {
+		defer wg.Done()
+		if _, seen := visited[node]; seen {
+			return
+		}
+		mu.Lock()
+		visited[node] = struct{}{}
+		mu.Unlock()
+		if prod, ok := g.productions[node]; ok {
+			nodes := prod.GetTerminals()
+			for _, n := range nodes {
+				mu.Lock()
+				reachable[n] = struct{}{}
+				mu.Unlock()
+				wg.Add(1)
+				visit(n)
+				}
+			}
+		}
+	reachable[g.keys[0]] = struct{}{}
+	wg.Add(1)
+	go visit(g.keys[0])
+	wg.Wait()
+
+	i := 0
+	for i < len(g.keys){
+		key := g.keys[i]
+		if _, isReachable := reachable[key]; !isReachable{
+			g.DeleteProductionAt(i)
+		}else{
+			i++
+		}
+	}
+}
