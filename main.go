@@ -1,20 +1,23 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
-	"strings"
+	"os"
 	. "tafl/lib"
 )
 
-const mock = `S->Aa|Bb|c
-A->Bb|C|E
-B->D|C|E
-F->aA|@D|E
-`
+
 
 func main() {
-	r := strings.NewReader(mock)
+	fileFlag := flag.String("path", "./grammar.txt", "The way to the file with grammar")
+	flag.Parse()
+
+	r, err := os.Open(*fileFlag)
+	if err != nil{
+		log.Fatal(err)
+	}
 	grammar, err := NewGrammar(r)
 	if err != nil {
 		log.Fatal(err)

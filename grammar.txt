@@ -1,0 +1,4 @@
+S->Aa|Bb|c
+A->Bb|C|E
+B->D|C|E
+F->aA|@D|E
