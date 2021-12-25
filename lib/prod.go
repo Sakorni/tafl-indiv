@@ -8,8 +8,9 @@ import (
 type ProductionList []string
 const eps = `\e`
 
-func FromString(source, delim string) ProductionList{
-	return strings.Split(source, delim)
+func FromString(source, delim string) *ProductionList{
+	a := ProductionList(strings.Split(source, delim))
+	return &a
 }
 
 func (p *ProductionList) GetTerminals()[]rune{
@@ -24,9 +25,13 @@ func (p *ProductionList) GetTerminals()[]rune{
 	return res
 }
 
-func (p *ProductionList) IsBarren(notBarrenTerminals []rune) bool{
+func (p *ProductionList) IsBarren(notBarrenTerminals map[rune]struct{}) bool{
 	barren := false
-	NBT := string(notBarrenTerminals)
+	var buf []rune
+	for k := range notBarrenTerminals{
+		buf = append(buf, k)
+	}
+	NBT := string(buf)
 	contains := func(r rune)bool{ return strings.ContainsRune(NBT, r)}
 	for _, prod := range *p{
 		for _, s := range prod{
@@ -41,4 +46,15 @@ func (p *ProductionList) IsBarren(notBarrenTerminals []rune) bool{
 		barren = false
 	}
 	return true
+}
+
+func (p *ProductionList) DeleteTerminal(terminal rune) {
+	newProdList := ProductionList{}
+	for _, prod := range *p{
+		if strings.ContainsRune(prod, terminal){
+			continue
+		}
+		newProdList = append(newProdList, prod)
+	}
+	*p = newProdList
 }

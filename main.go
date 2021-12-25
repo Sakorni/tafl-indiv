@@ -18,5 +18,7 @@ func main(){
 	if err !=nil{
 		log.Fatal(err)
 	}
-	fmt.Println(grammar)
+	fmt.Println(grammar.String())
+	grammar.DeleteBarren()
+	fmt.Println(grammar.String())
 }
