@@ -20,5 +20,5 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Printf("Изначальная грамматика:\n%s\n", grammar)
-
+	grammar.DeleteUseless()
 }
