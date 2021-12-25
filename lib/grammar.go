@@ -14,7 +14,7 @@ type Grammar struct {
 	keys        []rune
 }
 
-func NewGrammar(r io.Reader) (Grammar, error) {
+func NewGrammar(r io.Reader, delim string) (Grammar, error) {
 	res := Grammar{
 		make(map[rune]*ProductionList),
 		make([]rune, 0),
@@ -27,7 +27,7 @@ func NewGrammar(r io.Reader) (Grammar, error) {
 		t := rune(line[0])
 		if unicode.IsLetter(t) && unicode.IsUpper(t) {
 			res.keys = append(res.keys, t)
-			res.productions[t] = FromString(line[3:], "|")
+			res.productions[t] = FromString(line[3:], delim)
 		} else {
 			return Grammar{}, fmt.Errorf("invalid format of input data, \"%s\" is not a letter, or a terminal", string(t))
 		}
